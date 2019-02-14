@@ -4,9 +4,11 @@ from bottle import route, request, static_file, run
 root_adress = 'http://localhost:8080'
 root_path = '/home/nicolas/cloud/'
 
+
 @route('/')
 def root():
     return static_file('Upload.html', root='.')
+
 
 @route('/upload', method='POST')
 def do_upload():
@@ -24,11 +26,12 @@ def do_upload():
 
 @route('/cloud/')
 def list_root():
-    file_list = sort(os.listdir(combined_path))
+    file_list = sort_filelist(root_path)
     file_list_html = ""
-    for entry in os.listdir(root_path):
+    for entry in file_list:
         file_list_html += '<a href="' + root_adress + '/cloud/' + entry + '">' + entry + '</a> <br>'
     return file_list_html
+
 
 @route('/cloud/<path:path>')
 def try_dl(path):
@@ -37,12 +40,23 @@ def try_dl(path):
         filename = os.path.basename(combined_path)
         return static_file(path, root=root_path, download=filename)
     else:
-        file_list = sort(os.listdir(combined_path))
-        file_list_html = "";
+        file_list = sort_filelist(combined_path)
+        file_list_html = '<a href="' + root_adress + '/cloud/' + os.path.split(path)[0] + '">/.../</a> <br>'
         for entry in file_list:
             file_list_html += '<a href="' + root_adress + '/cloud/' + path + '/' + entry + '">' + entry + '</a> <br>'
         return file_list_html
 
+
+def sort_filelist(path):
+    dir_list = os.listdir(path)
+    folders = []
+    files = []
+    for entry in dir_list:
+        if os.path.isfile(path + entry):
+            files.append(entry)
+        else:
+            folders.append(entry)
+    return folders + files
 
 
 if __name__ == '__main__':
